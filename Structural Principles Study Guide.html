@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Principles Exam Prep</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons for aesthetic components -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Define Dark Theme Variables */
+        :root {
+            --color-bg-primary: #121212;
+            --color-bg-card: #1f2937; /* Dark Blue-Gray */
+            --color-text-default: #e5e7eb;
+            --color-accent-blue: #38bdf8; /* Sky Blue */
+            --color-accent-green: #4ade80; /* Lime Green */
+            --color-error: #f87171; /* Coral Red */
+        }
+
+        /* Custom styles for Inter font and smooth transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-default);
+        }
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            border: 1px solid transparent;
+        }
+        .tab-active {
+            background-color: var(--color-bg-card);
+            color: var(--color-accent-blue);
+            border-bottom: 4px solid var(--color-accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+        }
+        .option-button:hover:not(:disabled) {
+            background-color: #2c3e50;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .correct-answer {
+            background-color: rgba(74, 222, 128, 0.2); /* Light Lime Background */
+            border-color: var(--color-accent-green);
+            color: var(--color-accent-green);
+        }
+        .incorrect-answer {
+            background-color: rgba(248, 113, 113, 0.2); /* Light Coral Background */
+            border-color: var(--color-error);
+            color: var(--color-error);
+        }
+        .notes-card {
+            border-left: 5px solid var(--color-accent-blue);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-white mb-1">Structural Principles Exam Prep</h1>
+            <p class="text-gray-400">Mastering CONS5103: Structural Terminology, Loads & Construction Solutions</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 md:space-x-4 mb-8 bg-[#1f2937] p-2 rounded-xl shadow-2xl shadow-black/50">
+            <button id="notes-tab" onclick="switchTab('notes')" class="tab-button flex-1 py-3 px-4 rounded-lg text-lg font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none flex items-center justify-center">
+                <i data-lucide="book-open" class="w-5 h-5 mr-2"></i> Learning Notes
+            </button>
+            <button id="quiz-tab" onclick="switchTab('quiz')" class="tab-button flex-1 py-3 px-4 rounded-lg text-lg font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none flex items-center justify-center">
+                <i data-lucide="brain-circuit" class="w-5 h-5 mr-2"></i> Quizzes
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div id="content-area" class="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl shadow-black/50 border border-gray-700">
+            <!-- Dynamic Content Renders Here -->
+        </div>
+    </div>
+
+    <!-- Modal for Messages/Score -->
+    <div id="modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 rounded-xl p-6 md:p-8 shadow-2xl shadow-sky-500/20 max-w-sm w-full transform transition-all duration-300 scale-100 border border-sky-400">
+            <h3 id="modal-title" class="text-2xl font-bold text-lime-400 mb-4">Quiz Complete!</h3>
+            <p id="modal-content" class="text-gray-300 mb-6">Your final score is X out of Y!</p>
+            <div class="flex justify-end space-x-3">
+                <button onclick="hideModal(); resetQuiz();" class="py-2 px-4 bg-sky-500 text-white font-medium rounded-lg hover:bg-sky-600 transition shadow-lg shadow-sky-500/30">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables for Firebase/API calls (provided by the environment)
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        let quizData = [];
+        let quizState = {
+            mcqIndex: 0,
+            fitbIndex: 0,
+            mcqScore: 0,
+            fitbScore: 0,
+            activeQuizType: 'mcq'
+        };
+
+        const SLIDE_CONTENT = `
+            # Structures 3: Structural Principles
+            Aim: to describe basic structural terminology and explain typical loads and construction solutions that apply to commercial building structures.
+
+            ## Limit State Design (Slides 4-6)
+            * **Definition:** The state that, when exceeded, means a structure no longer fulfills its design criteria.
+            * **Ultimate Limit State (ULS):** Associated with collapse or other forms of structural failure. (Safety factors are laid down in NZS).
+            * **Serviceability Limit State (SLS):** The ability to perform adequately for normal use. Covers behavior like permissible deflection, cracking, mechanical vibration, and sway under wind loading.
+
+            ## Structural Concepts (Slides 8-12)
+            * **Compression and Bonding:** One element rests on another, transferring loads. Cross-bonding in masonry disperses point loads. Material must be strong in compression (e.g., masonry, concrete).
+            * **Stiffness vs. Strength:**
+                * **Strength:** Measure of the force needed to **break** or cause failure.
+                * **Stiffness:** Measure of how much a material will **deform, bend, or stretch** under load. Engineers must ensure both are adequate.
+            * **Stress and Strain:**
+                * **Stress:** Load divided by area (measure of how hard the material is working). Compressive stress (squeeze) vs. Tensile stress (stretch/extend).
+                * **Strain:** Deformation per unit of length.
+                * **Young's Modulus of Elasticity:** The point beyond which a material's natural state may be permanently deformed (weakness).
+            * **Shear:** Tearing effect due to forces acting in opposite directions. Maximum shear occurs near supports.
+
+            ## Beam Loads and Reactions (Slides 13-22)
+            * **Vertical Loads:**
+                * **Point Load (PL):** A concentrated load on a member (e.g., a column on a beam).
+                * **Uniformly Distributed Load (UDL):** A load spread over a certain area or distance (e.g., a concrete wall on a strip footing).
+            * **Reactions in Horizontal Members:**
+                * **Deflection:** The degree to which a structural member is displaced under load.
+                * **Bending Moment:** The reaction that causes the member to bend (tendency to rotate around an axis).
+                * **Shear Force:** Occurs when two unaligned, opposing forces are applied vertically.
+            * **Bending Detail:** In a simply supported beam under load, the upper zone is compressed, and the lower zone is stretched (tension) around the **Neutral Axis**. (Concrete is weak in tension, so steel reinforcing is concentrated in the lower zone).
+
+            ## Design Concepts & Bracing (Slides 24-36)
+            * The rigidity of a structure is achieved by a **combination** of methods, not a single one.
+            * **Shear Walls:** Act as bracing panels to provide **lateral support** (resisting wind/seismic loads). Often constructed of precast concrete or masonry block.
+            * **Rigid Beam/Column Junctions:** Stiff joints in concrete frames provide rigidity and lateral support. If not rigid, the frame distorts (pivots).
+            * **Structural Core:** An internal core (often concrete) provides lateral support, especially in high-rise buildings.
+            * **Beam Systems:** One-way (beams at ends of floor panels) vs. Two-way (additional strength from rigid junctions in both directions).
+            * **Steel Frame Bracing Types (Located in the bays):**
+                * **K-Bracing**
+                * **X-Bracing** (very effective but obstructs windows/openings)
+                * **Diagonal Bracing**
+
+            ## Structural Materials (Slides 38-41)
+            * **Concrete vs. Steel:**
+                * Steel is immediately strong and accurate but deteriorates quickly in fire, requiring expensive protective encasement (often concrete).
+                * Concrete is generally the first choice due to fire performance, despite being slower (formwork, setting).
+            * **Pre-cast Concrete:** Cast on or off-site. Quickly erected, but high transport/handling costs due to weight.
+            * **Pre-stressed Concrete:** High-tensile steel is stretched and bonded in concrete. Popular method to save weight and reduce formwork.
+            * **Timber:** Good for secondary elements (joists, purlins). Heavy timber performs well in fire (chars on the outside). **Laminated Timber** is glued sections, favored for appearance in halls/warehouses.
+        `;
+
+        // --- Simulated Quiz Content Generation (MANDATORY API STRUCTURE) ---
+
+        /**
+         * Simulates a call to the Gemini API to generate 60 questions
+         * based on the provided lecture content.
+         * In a real environment, this function would return the full quiz data.
+         */
+        async function generateQuizContent() {
+            try {
+                // Return placeholder data for immediate testing/display
+                if (window.location.protocol === 'file:') {
+                    console.warn("Running in local mode. Using placeholder quiz data.");
+                    return getPlaceholderQuizData();
+                }
+
+                const systemPrompt = `You are a structural engineering exam preparation assistant. Your task is to generate exactly 40 Multiple-Choice Questions (MCQ) and 20 Fill-in-the-Blank (FITB) questions based ONLY on the provided lecture notes. For every question, provide a concise explanation, the correct answer, and for MCQs, exactly four distinct options.
+
+Schema Instructions:
+- MCQs MUST have 'type': 'mcq', 'options' (array of 4 strings), and 'correctAnswer' (string, one of the options).
+- FITBs MUST have 'type': 'fitb', and 'correctAnswer' (string, the single word or short phrase that fits the blank).
+- The total length of the array MUST be 60.
+- Ensure the questions cover all major sections: Limit State Design, Structural Concepts (Stress, Strain, Shear), Loads (PL, UDL), Beam Reactions, Design Methods (Shear Walls, Bracing), and Materials (Concrete, Steel, Timber).
+
+The full lecture content is provided below.`;
+
+                const userQuery = `Generate the 40 MCQs and 20 FITBs based on the following lecture notes:\n\n${SLIDE_CONTENT}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    "type": { "type": "STRING", "description": "Either 'mcq' or 'fitb'." },
+                                    "question": { "type": "STRING" },
+                                    "options": { "type": "ARRAY", "items": { "type": "STRING" }, "description": "Only for 'mcq' type, exactly 4 options." },
+                                    "correctAnswer": { "type": "STRING" },
+                                    "explanation": { "type": "STRING" }
+                                },
+                                required: ["type", "question", "correctAnswer", "explanation"],
+                                propertyOrdering: ["type", "question", "options", "correctAnswer", "explanation"]
+                            }
+                        }
+                    }
+                };
+
+                const MAX_RETRIES = 5;
+                let delay = 1000;
+
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    try {
+                        console.log("Attempting to generate quiz content...");
+                        document.getElementById('content-area').innerHTML = `
+                            <div class="text-center py-12">
+                                <i data-lucide="loader-circle" class="w-8 h-8 mx-auto text-sky-400 animate-spin"></i>
+                                <p class="mt-4 text-gray-400">Generating 60 Exam Questions...</p>
+                                <p class="text-sm text-gray-500">This may take a few moments.</p>
+                            </div>
+                        `;
+                        // Re-initialize icons for the loading spinner
+                        lucide.createIcons();
+
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                        const result = await response.json();
+                        const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                        if (jsonText) {
+                            return JSON.parse(jsonText);
+                        } else {
+                            throw new Error("Model response was empty or malformed.");
+                        }
+
+                    } catch (error) {
+                        console.error(`Attempt ${i + 1} failed:`, error.message);
+                        if (i < MAX_RETRIES - 1) {
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; // Exponential backoff
+                        } else {
+                            // If all retries fail, return placeholder data instead of crashing
+                            console.error("All retries failed. Falling back to placeholder data.");
+                            return getPlaceholderQuizData();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Critical error during quiz generation:", error);
+                return getPlaceholderQuizData(); // Fallback
+            }
+        }
+
+        function getPlaceholderQuizData() {
+            // A minimum set of placeholder questions (2 MCQs and 2 FITBs)
+            // The full quiz is intended to contain 40 MCQs and 20 FITBs.
+            return [
+                {
+                    type: "mcq",
+                    question: "What structural design method relates to a structure's ability to perform adequately for normal use (e.g., deflection and cracking)?",
+                    options: ["Ultimate Limit State", "Collapse Limit State", "Serviceability Limit State", "Extreme Load State"],
+                    correctAnswer: "Serviceability Limit State",
+                    explanation: "Serviceability Limit State (SLS) covers the structure's behavior under normal conditions, such as checking for permissible deflection, cracking, and excessive vibration, ensuring it remains fit for use."
+                },
+                {
+                    type: "fitb",
+                    question: "The tearing effect due to forces acting in opposite directions, which is maximum near supports, is called ________.",
+                    correctAnswer: "Shear",
+                    explanation: "Shear is the vertical tearing force. Maximum shear force typically occurs close to a beam's supports due to the concentrated reaction forces."
+                },
+                {
+                    type: "mcq",
+                    question: "Which type of vertical load is characteristic of a column acting on a beam?",
+                    options: ["Uniformly Distributed Load (UDL)", "Point Load (PL)", "Tensile Load", "Compressive Load"],
+                    correctAnswer: "Point Load (PL)",
+                    explanation: "A Point Load (PL) is a concentrated load acting at a single point, such as the force applied by a column or the end of a girder."
+                },
+                {
+                    type: "fitb",
+                    question: "In a simply supported concrete beam, steel reinforcing is concentrated in the lower zone to resist the force of ________.",
+                    correctAnswer: "Tension",
+                    explanation: "Concrete is strong in compression (top zone) but weak in tension (bottom zone). Steel, being strong in tension, is placed in the bottom zone to reinforce the beam against stretching."
+                },
+                {
+                    type: "mcq",
+                    question: "What is the key disadvantage of X-bracing in a steel frame design?",
+                    options: ["It is not effective against lateral loads", "It is limited to single-story buildings", "It obstructs windows and openings", "It causes excessive deflection"],
+                    correctAnswer: "It obstructs windows and openings",
+                    explanation: "While X-bracing is very effective for lateral stability, the diagonals pass through the bays, making it difficult to place windows or doors in those sections."
+                }
+            ];
+        }
+
+        // --- Core Application Logic ---
+
+        // Attaching functions to window for access from HTML onclick attributes
+        window.switchTab = (tab) => {
+            const contentArea = document.getElementById('content-area');
+            const notesTab = document.getElementById('notes-tab');
+            const quizTab = document.getElementById('quiz-tab');
+
+            // Reset tab styles
+            notesTab.classList.remove('tab-active');
+            quizTab.classList.remove('tab-active');
+            notesTab.classList.remove('bg-gray-700');
+            quizTab.classList.remove('bg-gray-700');
+            notesTab.classList.add('bg-gray-700');
+            quizTab.classList.add('bg-gray-700');
+
+
+            if (tab === 'notes') {
+                notesTab.classList.add('tab-active');
+                renderNotes();
+            } else if (tab === 'quiz') {
+                quizTab.classList.add('tab-active');
+                renderQuizSetup();
+            }
+        };
+
+        window.showModal = (title, content) => {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('modal').classList.remove('hidden');
+        };
+
+        window.hideModal = () => {
+            document.getElementById('modal').classList.add('hidden');
+        };
+        
+        // Helper function to strip markdown bolding from text
+        const cleanText = (text) => text.replace(/\*\*/g, '').trim();
+
+        // --- Learning Notes Section ---
+
+        function renderNotes() {
+            const contentArea = document.getElementById('content-area');
+
+            // Parse the markdown-like structure for display
+            let htmlContent = '';
+            const sections = SLIDE_CONTENT.split('## ');
+
+            sections.forEach((section, index) => {
+                if (index === 0) { // Main title and intro
+                    const [title, ...rest] = section.trim().split('\n');
+                    htmlContent += `<h2 class="text-2xl font-bold text-lime-400 mb-4">${cleanText(title.replace('#', ''))}</h2>`;
+                    htmlContent += `<p class="text-gray-400 mb-6 border-b border-gray-700 pb-4">${cleanText(rest.join(' ').trim())}</p>`;
+                } else { // Subsections
+                    const [heading, ...contentLines] = section.trim().split('\n');
+                    const content = contentLines.map(line => {
+                        // Convert simple markdown list to HTML
+                        if (line.trim().startsWith('*')) {
+                            const parts = line.trim().substring(1).trim().split(':');
+                            if (parts.length > 1) {
+                                // Clean the keyword and the definition text
+                                const keyword = cleanText(parts[0]);
+                                const definition = cleanText(parts.slice(1).join(':'));
+                                return `<li class="mb-2"><strong class="text-sky-400">${keyword}:</strong> ${definition}</li>`;
+                            }
+                            // Fallback for simple list items without a colon
+                            return `<li class="mb-2">${cleanText(line.trim().substring(1))}</li>`;
+                        }
+                        return `<p class="mb-2">${cleanText(line.trim())}</p>`;
+                    }).join('');
+
+                    htmlContent += `
+                        <div class="notes-card bg-[#1a232f] p-5 mb-6 rounded-lg shadow-xl shadow-black/30">
+                            <h3 class="text-xl font-semibold text-gray-200 mb-3">${cleanText(heading)}</h3>
+                            <ul class="list-none pl-0 text-gray-300">${content}</ul>
+                        </div>
+                    `;
+                }
+            });
+
+            contentArea.innerHTML = htmlContent;
+        }
+
+        // --- Quiz Section Logic ---
+
+        function renderQuizSetup() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <h2 class="text-2xl font-bold text-lime-400 mb-6">Quiz Selection</h2>
+                <div class="space-y-4">
+                    <div class="bg-[#1a232f] p-6 rounded-xl border border-gray-700 shadow-xl shadow-black/30">
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">Multiple Choice Questions (40 Questions)</h3>
+                        <p class="text-gray-400 mb-4">Test your knowledge with four options. Includes detailed explanations.</p>
+                        <button onclick="startQuiz('mcq')" class="w-full py-3 bg-lime-500 text-gray-900 font-bold rounded-lg hover:bg-lime-400 transition shadow-md shadow-lime-500/30">Start MCQ Quiz</button>
+                    </div>
+                    <div class="bg-[#1a232f] p-6 rounded-xl border border-gray-700 shadow-xl shadow-black/30">
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">Fill-in-the-Blank (20 Questions)</h3>
+                        <p class="text-gray-400 mb-4">Recall specific terminology and definitions from the slides.</p>
+                        <button onclick="startQuiz('fitb')" class="w-full py-3 bg-sky-500 text-white font-bold rounded-lg hover:bg-sky-400 transition shadow-md shadow-sky-500/30">Start FITB Quiz</button>
+                    </div>
+                    <p class="text-sm text-center text-red-400 mt-6">Note: This quiz uses a minimal placeholder set if the full 60 questions could not be generated.</p>
+                </div>
+            `;
+        }
+
+        window.startQuiz = (type) => {
+            if (quizData.length === 0) {
+                 showModal("Error", "Quiz data is not loaded. Please wait for the initial load or refresh.");
+                 return;
+            }
+            quizState.activeQuizType = type;
+            quizState.mcqIndex = 0;
+            quizState.fitbIndex = 0;
+            quizState.mcqScore = 0;
+            quizState.fitbScore = 0;
+            renderQuiz();
+        };
+
+        window.resetQuiz = () => {
+            quizState.mcqIndex = 0;
+            quizState.fitbIndex = 0;
+            quizState.mcqScore = 0;
+            quizState.fitbScore = 0;
+            renderQuizSetup();
+        };
+
+        function renderQuiz() {
+            const contentArea = document.getElementById('content-area');
+            const type = quizState.activeQuizType;
+
+            const totalMCQs = quizData.filter(q => q.type === 'mcq').length;
+            const totalFITBs = quizData.filter(q => q.type === 'fitb').length;
+
+            const currentIndex = type === 'mcq' ? quizState.mcqIndex : quizState.fitbIndex;
+            const totalQuestions = type === 'mcq' ? totalMCQs : totalFITBs;
+            const score = type === 'mcq' ? quizState.mcqScore : quizState.fitbScore;
+
+            if (currentIndex >= totalQuestions) {
+                const finalScore = score;
+                const total = totalQuestions;
+                const message = `You completed the ${type.toUpperCase()} Quiz! Your final score is <strong class="text-lime-400">${finalScore} out of ${total}</strong> (${((finalScore / total) * 100).toFixed(0)}%).`;
+                showModal("Quiz Complete!", message);
+                return;
+            }
+
+            const currentQuestion = quizData.filter(q => q.type === type)[currentIndex];
+            const qTypeDisplay = type === 'mcq' ? 'Multiple Choice' : 'Fill-in-the-Blank';
+            const progress = `Question ${currentIndex + 1} of ${totalQuestions} | Score: ${score}`;
+
+            let questionContent = '';
+            if (type === 'mcq') {
+                questionContent = `
+                    <div class="space-y-3">
+                        ${currentQuestion.options.map((option, i) => `
+                            <button class="option-button w-full text-left py-3 px-5 bg-[#1a232f] text-gray-200 rounded-lg border border-gray-700 hover:border-sky-500 transition duration-150"
+                                onclick="checkAnswer('${type}', this, '${option.replace(/'/g, "\\'")}')">
+                                <span class="font-medium mr-2 text-sky-400">${String.fromCharCode(65 + i)}:</span> ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else { // FITB
+                questionContent = `
+                    <p class="text-gray-400 mb-4">Type the single best word or short phrase that completes the sentence (case insensitive):</p>
+                    <input id="fitb-input" type="text" class="w-full py-3 px-4 rounded-lg border-2 border-gray-700 bg-[#1a232f] text-gray-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-lg mb-4" placeholder="Type your answer here...">
+                    <button onclick="checkAnswer('${type}', document.getElementById(\'fitb-input\'), document.getElementById(\'fitb-input\').value)" class="w-full py-3 bg-lime-500 text-gray-900 font-bold rounded-lg hover:bg-lime-400 transition shadow-md shadow-lime-500/30">Submit Answer</button>
+                `;
+            }
+
+            contentArea.innerHTML = `
+                <h2 class="text-2xl font-bold text-lime-400 mb-2">${qTypeDisplay} Quiz</h2>
+                <p class="text-gray-400 mb-6 font-medium">${progress}</p>
+                <div class="bg-[#1a232f] p-6 rounded-xl border-t-4 border-sky-500 shadow-xl shadow-black/30 mb-6">
+                    <p class="text-xl font-semibold text-gray-100">${currentIndex + 1}. ${currentQuestion.question}</p>
+                </div>
+
+                ${questionContent}
+
+                <div id="feedback" class="mt-6 p-4 rounded-lg transition duration-300 hidden border">
+                    <h4 id="feedback-title" class="font-bold mb-2 text-lg"></h4>
+                    <p id="feedback-explanation" class="text-gray-300"></p>
+                    <button onclick="nextQuestion('${type}')" class="mt-4 py-2 px-4 bg-sky-500 text-white font-medium rounded-lg hover:bg-sky-400 transition shadow-md shadow-sky-500/30">Next Question</button>
+                </div>
+            `;
+        }
+
+        function normalizeAnswer(answer) {
+            return answer.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        window.checkAnswer = (type, element, userAnswer) => {
+            const currentIndex = type === 'mcq' ? quizState.mcqIndex : quizState.fitbIndex;
+            const currentQuestion = quizData.filter(q => q.type === type)[currentIndex];
+            const correctAnswer = currentQuestion.correctAnswer;
+            const feedback = document.getElementById('feedback');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+            let isCorrect = false;
+
+            // Disable all inputs/options
+            const buttons = document.querySelectorAll('.option-button');
+            buttons.forEach(btn => btn.disabled = true);
+            const input = document.getElementById('fitb-input');
+            if (input) input.disabled = true;
+
+            // Check logic
+            if (type === 'mcq') {
+                isCorrect = userAnswer === correctAnswer;
+                // Highlight the selected button and the correct answer
+                buttons.forEach(btn => {
+                    // Extract text content, stripping option letter (e.g., "A: ")
+                    const optionText = btn.textContent.substring(btn.textContent.indexOf(':') + 1).trim();
+                    if (optionText === correctAnswer) {
+                        btn.classList.add('correct-answer');
+                        btn.classList.remove('bg-[#1a232f]', 'text-gray-200', 'border-gray-700', 'hover:border-sky-500');
+                    } else if (btn === element) {
+                        if (!isCorrect) {
+                            btn.classList.add('incorrect-answer');
+                            btn.classList.remove('bg-[#1a232f]', 'text-gray-200', 'border-gray-700', 'hover:border-sky-500');
+                        }
+                    } else {
+                         // Dim non-selected incorrect options
+                         if (!btn.classList.contains('correct-answer')) {
+                            btn.classList.add('opacity-50');
+                         }
+                    }
+                });
+            } else { // FITB
+                // Simple case-insensitive and non-alphanumeric character comparison
+                isCorrect = normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
+            }
+
+            // Update score and display feedback
+            if (isCorrect) {
+                type === 'mcq' ? quizState.mcqScore++ : quizState.fitbScore++;
+                feedbackTitle.textContent = "Correct! Well done.";
+                feedback.classList.remove('incorrect-answer', 'hidden');
+                feedback.classList.add('correct-answer');
+            } else {
+                feedbackTitle.textContent = `Incorrect. The correct answer is: ${correctAnswer}`;
+                feedback.classList.remove('correct-answer', 'hidden');
+                feedback.classList.add('incorrect-answer');
+            }
+
+            feedbackExplanation.innerHTML = `<strong>Explanation:</strong> ${currentQuestion.explanation}`;
+            feedback.classList.remove('hidden');
+        };
+
+        window.nextQuestion = (type) => {
+            if (type === 'mcq') {
+                quizState.mcqIndex++;
+            } else {
+                quizState.fitbIndex++;
+            }
+            renderQuiz();
+        };
+
+        // --- Initialization ---
+
+        async function init() {
+            // 1. Load Quiz Data
+            quizData = await generateQuizContent();
+            console.log(`Quiz data loaded with ${quizData.length} questions.`);
+            
+            // 2. Set up initial view
+            switchTab('notes');
+            // 3. Create Lucide Icons
+            lucide.createIcons();
+        }
+
+        init();
+    </script>
+</body>
+</html>
